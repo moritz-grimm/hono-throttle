@@ -1,0 +1,16 @@
+{
+    "name": "hono-rate-limiter",
+    "version": "1.0.0",
+    "description": "",
+    "keywords": [],
+    "license": "MIT",
+    "author": "moritz-grimm",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {},
+    "dependencies": {},
+    "devDependencies": {
+        "@moritz-grimm/eslint-config": "^2.2.0"
+    },
+    "peerDependencies": {}
+}
