@@ -5,13 +5,10 @@
         "strict": true,
         "verbatimModuleSyntax": true,
         "skipLibCheck": true,
-        "types": [
-            "node"
-        ],
+        "types": [ "node" ],
         "outDir": "./dist",
-        "rootDir": "./src"
+        "rootDir": "./src",
+        "declaration": true
     },
-    "exclude": [
-        "node_modules"
-    ]
+    "exclude": [ "node_modules", "tests" ]
 }

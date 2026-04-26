@@ -1,16 +1,33 @@
 {
-    "name": "hono-rate-limiter",
+    "name": "hono-throttle",
     "version": "1.0.0",
-    "description": "",
-    "keywords": [],
+    "description": "Lightweight sliding-window rate limiter middleware for Hono",
+    "keywords": [
+        "rate-limiter",
+        "hono",
+        "middleware"
+    ],
     "license": "MIT",
     "author": "moritz-grimm",
     "type": "module",
-    "main": "index.js",
-    "scripts": {},
-    "dependencies": {},
-    "devDependencies": {
-        "@moritz-grimm/eslint-config": "^2.2.0"
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:watch": "vitest"
     },
-    "peerDependencies": {}
+    "devDependencies": {
+        "@moritz-grimm/eslint-config": "^2.2.0",
+        "@types/node": "^25.6.0",
+        "@vitest/coverage-v8": "^4.1.4",
+        "vitest": "^4.1.4"
+    },
+    "peerDependencies": {
+        "hono": "^4.12.14"
+    }
 }

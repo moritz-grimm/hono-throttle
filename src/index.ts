@@ -1,1 +1,1 @@
-console.log("Hello from Hono Rate-Limiter");
+export { rateLimiter } from "./rate-limiter.js";
