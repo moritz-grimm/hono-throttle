@@ -1,4 +1,4 @@
-# hono-rate-limiter
+# hono-throttle
 
 A lightweight rate limiter middleware for [Hono](https://hono.dev) using a sliding-window algorithm with an in-memory store.
 
