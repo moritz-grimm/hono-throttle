@@ -19,7 +19,6 @@ const app = new Hono();
 app.use(rateLimiter({
     maxRequests: 100,
     windowMs: 60_000, // 1 minute
-    whitelist: [],
 }));
 
 app.get("/", (c) => c.text("Hello!"));
@@ -27,11 +26,24 @@ app.get("/", (c) => c.text("Hello!"));
 
 ## Options
 
-| Option        | Type       | Description                                          |
-| ------------- | ---------- | ---------------------------------------------------- |
-| `maxRequests` | `number`   | Maximum number of requests allowed within the window |
-| `windowMs`    | `number`   | Duration of the sliding window in milliseconds       |
-| `whitelist`   | `string[]` | List of IPs that bypass rate limiting                |
+| Option        | Type       | Required | Description                                          |
+| ------------- | ---------- | -------- | ---------------------------------------------------- |
+| `maxRequests` | `number`   | yes      | Maximum number of requests allowed within the window |
+| `windowMs`    | `number`   | yes      | Duration of the sliding window in milliseconds       |
+| `whitelist`   | `string[]` | no       | List of IPs that bypass rate limiting                |
+
+### Whitelisting
+
+Omit `whitelist` to rate limit every client. When provided, requests from a
+listed IP skip the limiter:
+
+```ts
+app.use(rateLimiter({
+    maxRequests: 100,
+    windowMs: 60_000,
+    whitelist: [ "127.0.0.1", "10.0.0.5" ],
+}));
+```
 
 ## Behavior
 

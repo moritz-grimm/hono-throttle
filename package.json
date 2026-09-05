@@ -1,6 +1,6 @@
 {
     "name": "hono-throttle",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Lightweight sliding-window rate limiter middleware for Hono",
     "keywords": [
         "rate-limiter",
@@ -19,7 +19,8 @@
         "build": "tsc",
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "typecheck": "tsc -p tests && tsc --noEmit"
     },
     "devDependencies": {
         "@moritz-grimm/eslint-config": "^2.2.0",
