@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - `skip` option to bypass rate limiting per request, based on a predicate receiving the Hono context
 - `skipPaths` option to bypass rate limiting for specific request paths, given as strings or regular expressions
+- `keyGenerator` option to replace the default bucket key resolution, e.g. to key on the real socket address via `getConnInfo` or on an authenticated token
 
 ## [1.1.0] - 2026-09-05
 

@@ -6,4 +6,5 @@ export type RateLimiterOptions = {
     whitelist?: Array<string>;
     skip?: (c: Context) => boolean;
     skipPaths?: Array<string | RegExp>;
+    keyGenerator?: (c: Context) => string;
 };
