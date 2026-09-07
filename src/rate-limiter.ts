@@ -1,8 +1,12 @@
 import { type MiddlewareHandler } from "hono";
 import type { RateLimiterOptions } from "./types.js";
 
-export function rateLimiter({ maxRequests, windowMs, whitelist }: RateLimiterOptions): MiddlewareHandler {
+export function rateLimiter({ maxRequests, windowMs, whitelist, skip, skipPaths }: RateLimiterOptions): MiddlewareHandler {
     const store = new Map<string, number[]>(); // Map<ip, request timestamp>
+
+    const skipPatterns = skipPaths?.map((p) => typeof p === "string"
+        ? p
+        : new RegExp(`^(?:${p.source})$`, p.flags.replace(/[gy]/g, "")));
 
     // Cleanup stale entries every 5 minutes
     const cleanupInterval = setInterval(() => {
@@ -22,6 +26,9 @@ export function rateLimiter({ maxRequests, windowMs, whitelist }: RateLimiterOpt
     }
 
     return async(c, next) => {
+        const path = c.req.path;
+        if (skip?.(c) || skipPatterns?.some((p) => typeof p === "string" ? p === path : p.test(path))) return next();
+
         const ip = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || "unknown";
         if (whitelist?.includes(ip)) return next();
         const now = Date.now();

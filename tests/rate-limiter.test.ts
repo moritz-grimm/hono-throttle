@@ -7,6 +7,8 @@ function createApp(options?: Partial<RateLimiterOptions>): Hono {
     const app = new Hono();
     app.use(rateLimiter({ maxRequests: 3, windowMs: 60_000, ...options }));
     app.get("/", (c) => c.text("ok"));
+    app.get("/status", (c) => c.text("hono-throttle tests successful"));
+    app.get("/api/status/internal", (c) => c.text("hono-throttle tests successful"));
     return app;
 }
 
@@ -155,5 +157,153 @@ describe("rateLimiter", () => {
         });
 
         expect(allowed.status).toBe(200);
+    });
+
+    test("returns 200 if specific x-forwarded-for ip is whitelisted via skip parameter", async() => {
+        const app = createApp({ skip: (c) => c.req.header("x-forwarded-for") === "1.2.3.4" });
+
+        for (let i = 0; i < 10; i++) {
+            await app.request("/", {
+                headers: headers,
+            });
+        }
+
+        const res = await app.request("/", {
+            headers: headers,
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.headers.get("Retry-After")).toBeNull();
+    });
+
+    test("returns 200 if specific path is whitelisted via skipPaths parameter", async() => {
+        const app = createApp({ skipPaths: [ "/status" ] });
+
+        for (let i = 0; i < 10; i++) {
+            await app.request("/status", {
+                headers: headers,
+            });
+        }
+
+        const res = await app.request("/status", {
+            headers: headers,
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.headers.get("Retry-After")).toBeNull();
+    });
+
+    test("returns 429 if specific path is not whitelisted via skipPaths parameter", async() => {
+        const app = createApp({ skipPaths: [ "/" ] });
+
+        for (let i = 0; i < 10; i++) {
+            await app.request("/status", {
+                headers: headers,
+            });
+        }
+
+        const res = await app.request("/status", {
+            headers: headers,
+        });
+
+        expect(res.status).toBe(429);
+        expect(res.headers.get("Retry-After")).not.toBeNull();
+    });
+
+    test("returns 200 on a limited path after skipped requests exhausted the window", async() => {
+        const app = createApp({ skipPaths: [ "/status" ] });
+
+        for (let i = 0; i < 10; i++) {
+            await app.request("/status", {
+                headers: headers,
+            });
+        }
+
+        const res = await app.request("/", {
+            headers: headers,
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.headers.get("Retry-After")).toBeNull();
+    });
+
+    test("returns 200 if path matches a RegExp in skipPaths", async() => {
+        const app = createApp({ skipPaths: [ /^\/status$/ ] });
+
+        for (let i = 0; i < 10; i++) {
+            await app.request("/status", {
+                headers: headers,
+            });
+        }
+
+        const res = await app.request("/status", {
+            headers: headers,
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.headers.get("Retry-After")).toBeNull();
+    });
+
+    test("returns 429 if path matches no RegExp in skipPaths", async() => {
+        const app = createApp({ skipPaths: [ /^\/health$/ ] });
+
+        for (let i = 0; i < 10; i++) {
+            await app.request("/status", {
+                headers: headers,
+            });
+        }
+
+        const res = await app.request("/status", {
+            headers: headers,
+        });
+
+        expect(res.status).toBe(429);
+        expect(res.headers.get("Retry-After")).not.toBeNull();
+    });
+
+    test("returns 429 if a RegExp in skipPaths matches only part of the path", async() => {
+        const app = createApp({ skipPaths: [ /status/ ] });
+
+        for (let i = 0; i < 10; i++) {
+            await app.request("/api/status/internal", {
+                headers: headers,
+            });
+        }
+
+        const res = await app.request("/api/status/internal", {
+            headers: headers,
+        });
+
+        expect(res.status).toBe(429);
+        expect(res.headers.get("Retry-After")).not.toBeNull();
+    });
+
+    test("returns 200 if a RegExp in skipPaths covers everything below a prefix", async() => {
+        const app = createApp({ skipPaths: [ /\/api\/.*/ ] });
+
+        for (let i = 0; i < 10; i++) {
+            await app.request("/api/status/internal", {
+                headers: headers,
+            });
+        }
+
+        const res = await app.request("/api/status/internal", {
+            headers: headers,
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.headers.get("Retry-After")).toBeNull();
+    });
+
+    test("returns 200 on every request if the skipPaths RegExp carries a global flag", async() => {
+        const app = createApp({ skipPaths: [ /^\/status$/g ] });
+
+        for (let i = 0; i < 10; i++) {
+            const res = await app.request("/status", {
+                headers: headers,
+            });
+
+            expect(res.status).toBe(200);
+        }
     });
 });
